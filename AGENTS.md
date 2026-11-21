@@ -1,212 +1,272 @@
-# Gebeta — Integrated AI Food Intelligence Platform
+# Gebeta — Repository Instructions
 
-## 1. Project Mission
+## 1. Project Identity
 
-Gebeta is an AI-powered Food Intelligence and Nutrition Platform connecting hotels and food providers with guests through digital menus, nutritional information, food discovery, and personalized meal recommendations.
+Project name: **Gebeta**
 
-IMPORTANT: Gebeta is a HACKATHON MVP, NOT a static frontend prototype.
+Product: AI-Powered Food Intelligence & Personalized Nutrition Platform.
 
-We want a working, integrated application with real authentication, persistent database storage, backend APIs, file storage, and AI integration.
+Initial focus: Ethiopian food intelligence, beginning in Southwestern Ethiopia.
 
-Hackathon scope means simplifying implementation and avoiding unnecessary production complexity. It does NOT mean removing essential application functionality.
+Gebeta helps people:
 
-## 2. Mandatory Architecture
+- Discover Ethiopian and other local foods.
+- Identify likely foods from meal images.
+- Understand nutrition estimates and their limitations.
+- Discover food-provider menus.
+- Save confirmed meals to a personal food diary.
+- Access food information in a language they understand.
 
-- Frontend: React + TypeScript + Vite.
-- Backend: Node.js + Express.
-- Database: Supabase-managed PostgreSQL.
-- Authentication: Supabase Auth.
-- File storage: Supabase Storage.
-- AI: Provider-independent backend AI adapter.
-- Frontend hosting: Existing Vercel staging and production projects.
-- Backend hosting: To be decided separately. Render is postponed.
+Gebeta also gives food providers tools to publish menus and gives authorized nutrition/food institutions a controlled way to contribute to or review food information.
 
-The Express API owns business logic, protected business operations, complex authorization, and AI orchestration.
+This repository currently targets a **hackathon demonstration website**, not a complete production platform.
 
-The frontend may use Supabase Auth and approved Storage flows, but core business operations must communicate through the Express API.
+## 2. Product Vision and MVP Boundary
 
-Do not introduce another database or authentication provider.
+The project proposal describes the long-term product vision.
 
-## 3. Actors
+The MVP requirements document defines the product capabilities and acceptance expectations.
 
-1. Hotel administrators and staff: manage hotels, menus, meals, ingredients, images, and available nutrition information.
-2. Guests/users: discover hotels, browse menus, set dietary preferences and nutrition goals, and receive meal recommendations.
-3. Platform administrators: oversee participating hotels and basic platform activity.
+This repository must implement a focused, demonstrable subset of that vision.
 
-AI is a platform capability, not a human actor or account role.
+Do not attempt to implement every proposed future feature.
 
-## 4. Required Functional Features
+### Four platform actors
 
-### Authentication
-- Registration and login using Supabase Auth.
-- Logout and session persistence.
-- Protected frontend routes.
-- Backend JWT verification using Supabase-issued access tokens.
-- Role-based and resource-based authorization.
+1. Individual User
+2. Food Provider
+3. Nutrition/Food Institution
+4. Platform Administrator
 
-### Hotel management
-- Hotel registration and profile management.
-- Hotel dashboard.
-- Menu creation and management.
-- Meal creation and management.
-- Ingredients and portion sizes.
-- Prices and available nutrition information.
-- Food image uploads.
-- Meal availability.
+Do not remove an actor from the product architecture simply because their complete workflow is deferred from the demo.
 
-### Guest experience
-- Hotel discovery.
-- Digital menu browsing.
-- Meal details.
-- Ingredient and nutrition information.
-- Dietary preferences and nutrition goals.
-- Personalized meal recommendations.
+## 3. Hackathon Demo Objectives
 
-### AI nutrition
-- Backend AI integration through a provider-independent adapter.
-- Meal matching based on available food data and guest preferences.
-- Recommendation explanations.
-- Clearly distinguish provided nutrition data from estimates.
-- Never fabricate verified nutrition values.
-- Provide a clearly identified fallback when AI credentials are unavailable.
+The demo should communicate the following value:
 
-### Platform administration
-- Basic platform dashboard.
-- Hotel overview and management.
-- Statistics calculated from actual database records.
+1. A user can discover Ethiopian foods.
+2. A user can upload a meal image or use a sample image.
+3. Gebeta presents likely food candidates.
+4. The user confirms or corrects the selected food.
+5. Gebeta displays nutrition estimates with portion basis and source information.
+6. The user can save a confirmed meal to a personal diary.
+7. A food provider can manage and publish a sample menu.
+8. A guest can access a provider's menu through a QR/referral link.
+9. An institution reviewer can see a sample food-review workflow.
+10. An administrator can demonstrate basic moderation.
 
-## 5. Database and Storage
+The two strongest demonstration journeys are:
 
-Use Supabase PostgreSQL for persistent application data.
+- Individual food discovery and scan-to-nutrition.
+- Provider menu discovery through QR/referral.
 
-Use Supabase Auth for identity.
+Other actor dashboards should be implemented as smaller supporting demonstrations.
 
-Use Supabase Storage for hotel and meal images.
+## 4. Technology Decisions
 
-Create SQL migrations for the actual schema.
+Follow the technology already selected for this repository.
 
-Apply Row Level Security (RLS) and appropriate ownership and access policies.
+### Frontend
 
-Never expose the Supabase service-role key in frontend code.
+- React
+- TypeScript
+- Vite
+- Tailwind CSS, if already configured
+- React Router, if already configured
+- Existing UI component and icon libraries
 
-Use realistic seed data for the demonstration. Seed data must be stored in the database, not substituted with frontend-only arrays for core workflows.
+### Backend
 
-## 6. Backend Requirements
+- Node.js
+- Express
+- JavaScript or TypeScript according to the existing backend configuration
 
-Implement real Express REST endpoints.
+### Data and platform services
 
-Use:
-- Authentication middleware.
-- Authorization middleware.
-- Input validation.
-- Service and route separation.
-- Centralized error handling.
-- Environment-based configuration.
-- Health-check endpoint.
+- Supabase-managed PostgreSQL
+- Supabase Auth
+- Supabase Storage where configured
+- Node.js API for application business logic and integrations
 
-The frontend must call actual implemented endpoints.
+### AI
 
-Do not invent API endpoints or create mock API services to simulate unfinished backend functionality.
+- Use a backend AI adapter.
+- Keep external AI credentials on the server.
+- Provide a deterministic demo fallback when no AI credentials are configured.
 
-## 7. Frontend Requirements
+Do not replace the selected architecture without explicit approval.
 
-Build a polished, responsive application.
+Do not introduce a second backend framework.
 
-Use reusable React components and TypeScript.
+Do not expose Supabase service-role credentials or AI keys in browser code.
 
-Provide separate experiences for guests, hotel administrators, and platform administrators.
+## 5. Mandatory Repository Inspection
 
-Include:
-- Authentication pages.
-- Guest dashboard.
-- Hotel discovery and digital menus.
-- Meal details.
-- Guest preferences.
-- AI recommendations.
-- Hotel dashboard.
-- Menu and meal management.
-- Basic platform administration.
+Before implementing a feature:
 
-Every important action must communicate with the appropriate backend or Supabase service.
+1. Inspect the existing repository structure.
+2. Read the relevant source files.
+3. Inspect package.json scripts and installed dependencies.
+4. Inspect existing routes, services, components, and database migrations.
+5. Reuse existing conventions.
+6. Identify missing functionality before adding code.
 
-Local UI state is allowed for temporary interface state, but not as a replacement for persistent business data.
+Never assume a route, database table, component, hook, or service exists.
 
-## 8. Demo Constraints
+Never invent an API endpoint and silently use it from the frontend.
 
-Prioritize a working end-to-end demonstration over unnecessary production complexity.
+If an endpoint is missing:
 
-Simplify workflows where reasonable.
+- Identify the gap.
+- Propose the smallest compatible implementation.
+- Implement it in the correct backend layer.
+- Update the relevant documentation.
 
-Do not spend hackathon time implementing:
-- Complex subscription billing.
-- Enterprise analytics.
-- Unnecessary microservices.
-- Elaborate audit systems.
-- Native mobile applications.
+Do not rewrite working modules simply to match a preferred architecture.
 
-Do not remove essential authentication, authorization, database, API, or integration functionality.
+## 6. Implementation Principles
 
-AI functionality must use a real provider when configured. If unavailable, clearly identify any fallback as a demonstration fallback.
+- Prefer a small working feature over a large unfinished abstraction.
+- Build complete vertical user journeys.
+- Keep components reusable but avoid unnecessary abstraction.
+- Keep business logic out of React presentation components.
+- Keep database access out of UI components.
+- Validate inputs at system boundaries.
+- Use meaningful TypeScript types.
+- Use clear loading, empty, success, and error states.
+- Ensure responsive layouts for mobile and desktop.
+- Avoid fake buttons and nonfunctional interactions.
+- Do not create placeholder pages that look finished but have no behavior.
 
-## 9. Security
+## 7. Demo Data and Mock Integrations
 
-- Never commit secrets.
-- Never expose private AI credentials.
-- Never expose the Supabase service-role key to the browser.
-- Verify Supabase access tokens in Express.
-- Enforce authorization on the backend.
-- Protect hotel-specific data from other hotels.
-- Apply RLS to database tables.
-- Validate incoming requests.
+This is a hackathon demo.
 
-## 10. Development Workflow
+Mock data and mock integrations are permitted when they are clearly identified.
 
-Before changing code:
-1. Inspect the repository and existing implementation.
-2. Read package files, source code, migrations, and documentation.
-3. Identify what exists and what is missing.
-4. Preserve working code and user changes.
-5. Produce a concise implementation plan.
+Examples:
 
-Then continue implementing. Do not stop at documentation or planning.
+- Sample Ethiopian food catalogue.
+- Fictional hotels, restaurants, and cafés.
+- Demo nutrition references.
+- Mock AI recognition results.
+- Sample institution reviews.
+- Sample analytics.
 
-Work in complete vertical slices: frontend, API, database, and authorization must work together.
+However:
 
-Run available lint, type-check, tests, and builds. Never claim success without executing the relevant command.
+- Never label mock AI output as a verified real-world recognition.
+- Never label fictional providers as real partners.
+- Never present demo nutrition data as laboratory measurements.
+- Never claim a payment has been completed if no real payment occurred.
 
-If external credentials are missing, implement the integration structure, document the required environment variables, and continue with independent work.
+Use a consistent demo-data layer so that mock data can later be replaced.
 
-## 11. Documentation
+## 8. AI and Nutrition Integrity
 
-Maintain documentation that reflects the actual implementation:
-- docs/DEMO_SCOPE.md
-- docs/ARCHITECTURE.md
-- docs/DATABASE.md
-- docs/API_CONTRACT.md
-- docs/BUILD_PLAN.md
-- docs/DEMO_DATA.md
+Food recognition is probabilistic.
 
-Do not document nonexistent endpoints or claim unfinished features are implemented.
+An image cannot reliably establish:
 
-## 12. Acceptance Criteria
+- Exact ingredients.
+- Exact cooking oil quantity.
+- Recipe proportions.
+- Exact serving weight.
+- Allergen absence.
 
-The demonstration should support this complete workflow:
+The application must:
 
-1. A hotel administrator registers and logs in.
-2. The administrator manages a hotel.
-3. The administrator creates menus and meals.
-4. The administrator adds ingredients, prices, available nutrition information, and images.
-5. A guest registers and logs in.
-6. The guest discovers the hotel and browses its menu.
-7. The guest views meal details.
-8. The guest saves dietary preferences and nutrition goals.
-9. The guest receives personalized meal recommendations with explanations.
-10. A platform administrator can view participating hotels.
+- Present candidate foods rather than claiming certainty.
+- Allow the user to confirm or correct the result.
+- Show serving-size assumptions.
+- Show nutrition source and verification status.
+- Clearly label estimates.
+- Preserve unknown values as unknown.
 
-All core business data must persist in Supabase PostgreSQL.
+Never invent nutrition values to fill missing data.
 
-Authentication must use Supabase Auth.
+Never provide diagnosis, treatment, or medical prescriptions.
 
-Protected business operations must use the Express API.
+Gebeta is a food information and discovery platform, not a replacement for qualified clinical advice.
 
-The final result must be an integrated, functional hackathon MVP.
+## 9. Privacy and Permissions
+
+- Users may access only their own private diary and profile.
+- Providers may manage only their own provider profile and menus.
+- Providers must never access individual users' private diaries or health profiles.
+- Institution reviewers may access only assigned submissions and authorized aggregate reports.
+- Administrative actions must respect permissions.
+- Never place secrets in frontend environment variables.
+- Do not collect sensitive health information unless necessary and explicitly consented to.
+
+## 10. UI/UX Rules
+
+Read and follow:
+
+- docs/UI_UX_DESIGN_SYSTEM.md
+
+Preserve the established Gebeta visual identity.
+
+The interface should feel:
+
+- Modern.
+- Clean.
+- Trustworthy.
+- Food-focused.
+- Accessible.
+- Responsive.
+
+Do not redesign the entire application without a clear reason.
+
+Do not introduce unrelated colors, typography, spacing systems, or component styles.
+
+## 11. Development Workflow
+
+For every assigned task:
+
+1. Understand the requested outcome.
+2. Inspect the existing implementation.
+3. Identify affected files.
+4. Explain important gaps briefly.
+5. Implement the smallest complete solution.
+6. Run relevant lint, type-check, and tests.
+7. Fix errors introduced by the change.
+8. Summarize changed files and remaining limitations.
+
+Do not claim tests passed unless they were actually run.
+
+Do not silently skip failing tests.
+
+## 12. Scope Control
+
+Do not implement these as hackathon requirements unless explicitly requested:
+
+- Native Android/iOS applications.
+- Live subscription billing.
+- Provider commissions.
+- Full payment integration.
+- POS or inventory integrations.
+- Food ordering and reservations.
+- Advanced meal planning.
+- Clinical nutrition recommendations.
+- Advanced portion-weight estimation.
+- Production-scale analytics.
+- Full professional translation of every screen.
+- Complex enterprise multi-branch management.
+
+Keep the architecture extensible, but do not build these features now.
+
+## 13. Definition of Done
+
+A feature is complete only when:
+
+- The user-facing interaction works.
+- The interface is responsive.
+- Data is handled consistently.
+- Loading, empty, and error states exist.
+- Access boundaries are respected.
+- No fake success state is presented.
+- Relevant checks have been run.
+- Known limitations are documented.
+
+**Primary instruction: Build a convincing, coherent, working Gebeta demo. Do not turn this hackathon repository into an unnecessarily complex production system.**

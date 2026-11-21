@@ -1,0 +1,21 @@
+---
+description: Gebeta database and Supabase rules
+globs:
+  - supabase/**
+  - backend/**
+alwaysApply: false
+---
+
+# Database Rules
+
+- Use the existing Supabase PostgreSQL configuration.
+- Inspect existing migrations and schema before changing the database.
+- Never assume a conceptual table already exists.
+- Avoid duplicate tables and conflicting migrations.
+- Use versioned SQL migrations.
+- Apply appropriate foreign keys and indexes.
+- Preserve user and provider ownership boundaries.
+- Use Row-Level Security where Supabase client access is permitted.
+- Do not rely exclusively on frontend authorization.
+- Never commit service-role credentials or production secrets.
+- Keep demo seed data separate from schema migrations.

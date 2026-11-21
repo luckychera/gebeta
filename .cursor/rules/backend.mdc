@@ -1,0 +1,21 @@
+---
+description: Gebeta backend development rules
+globs: backend/**
+alwaysApply: false
+---
+
+# Backend Rules
+
+- Follow the existing Node.js and Express architecture.
+- Inspect existing routes, controllers, services, and middleware first.
+- Keep business logic in the appropriate service layer.
+- Validate incoming request data.
+- Enforce authentication and authorization server-side.
+- Verify resource ownership for user and provider operations.
+- Keep external API credentials on the server.
+- Handle AI provider errors, timeouts, and unavailable services.
+- Provide a deterministic mock AI adapter for demo mode when needed.
+- Do not return sensitive information in API responses.
+- Use consistent error handling.
+- Do not introduce another backend framework.
+- Do not claim an integration is live when it is mocked.
