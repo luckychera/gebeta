@@ -9,7 +9,6 @@ export const PROVIDERS: ProviderRecord[] = [
     summary:
       'A fictional hotel kitchen in Kafa, used to show a digital menu, sample prices, and a QR referral. Not a real partnership.',
     manageable: true,
-    referralPath: 'gebeta://provider/kafa-terrace',
   },
   {
     id: 'jimma-lakes',
@@ -19,7 +18,6 @@ export const PROVIDERS: ProviderRecord[] = [
     summary:
       'A fictional café menu for the guest view. Guests can read it without an account. It is not a live listing.',
     manageable: false,
-    referralPath: 'gebeta://provider/jimma-lakes',
   },
 ];
 

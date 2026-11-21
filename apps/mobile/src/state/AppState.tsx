@@ -12,9 +12,11 @@ import type {
   ScanSession,
 } from '../types';
 import { createId } from '../utils/format';
-import { emptyProfile } from '../utils/profile';
+import { emptyProfile, normalizeProfile } from '../utils/profile';
 
 const STORAGE_KEY = 'gebeta.nutriguider.v1';
+
+export type MenuItemPatch = Pick<MenuItem, 'name' | 'description' | 'priceEtb'>;
 
 type Persisted = {
   version: 1;
@@ -45,6 +47,7 @@ type AppStateValue = {
   removeDiary: (id: string) => void;
   toggleMenuItem: (providerId: string, itemId: string) => void;
   addMenuItem: (providerId: string, item: MenuItem) => void;
+  updateMenuItem: (providerId: string, itemId: string, patch: MenuItemPatch) => void;
   setReview: (status: ReviewStatus, note: string) => void;
   setProviderVerification: (status: ProviderModerationStatus) => void;
   clearDemo: () => void;
@@ -67,6 +70,7 @@ function parsePersisted(raw: string | null): Persisted | null {
 export function AppStateProvider({ children }: { children: React.ReactNode }) {
   const [hydrated, setHydrated] = useState(false);
   const [storageError, setStorageError] = useState<string | null>(null);
+  const [persistBlocked, setPersistBlocked] = useState(false);
   const [seenWelcome, setSeenWelcome] = useState(false);
   const [profile, setProfile] = useState<Profile>(emptyProfile);
   const [diary, setDiary] = useState<DiaryEntry[]>([]);
@@ -81,18 +85,26 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     AsyncStorage.getItem(STORAGE_KEY)
       .then((raw) => {
         if (!active) return;
+        if (!raw) return;
         const parsed = parsePersisted(raw);
-        if (parsed) {
-          setSeenWelcome(parsed.seenWelcome);
-          setProfile(parsed.profile);
-          setDiary(parsed.diary);
-          setMenus(parsed.menus ?? seedMenus());
-          setReviewState(parsed.review ?? initialReview());
-          setModeration(parsed.moderation ?? initialModeration());
+        if (!parsed) {
+          setStorageError(
+            'Saved data on this device could not be read, so it was left untouched. New changes will not be saved until you use "Clear saved demo data" on Profile.',
+          );
+          setPersistBlocked(true);
+          return;
         }
+        setSeenWelcome(parsed.seenWelcome);
+        setProfile(normalizeProfile(parsed.profile));
+        setDiary(parsed.diary);
+        setMenus(parsed.menus ?? seedMenus());
+        setReviewState(parsed.review ?? initialReview());
+        setModeration(parsed.moderation ?? initialModeration());
       })
       .catch(() => {
-        if (active) setStorageError('Saved data on this device could not be read. Starting from the demo catalogue.');
+        if (!active) return;
+        setStorageError('Saved data on this device could not be read, so it was left untouched. The demo is running from the sample catalogue.');
+        setPersistBlocked(true);
       })
       .finally(() => {
         if (active) setHydrated(true);
@@ -103,7 +115,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    if (!hydrated) return;
+    if (!hydrated || persistBlocked) return;
     const payload: Persisted = {
       version: 1,
       seenWelcome,
@@ -116,7 +128,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(payload)).catch(() => {
       setStorageError('Changes could not be saved on this device.');
     });
-  }, [hydrated, seenWelcome, profile, diary, menus, review, moderation]);
+  }, [hydrated, persistBlocked, seenWelcome, profile, diary, menus, review, moderation]);
 
   const completeWelcome = useCallback(() => setSeenWelcome(true), []);
   const resetWelcome = useCallback(() => setSeenWelcome(false), []);
@@ -150,6 +162,14 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     setFlash('Menu item added on this device.');
   }, []);
 
+  const updateMenuItem = useCallback((providerId: string, itemId: string, patch: MenuItemPatch) => {
+    setMenus((current) => ({
+      ...current,
+      [providerId]: (current[providerId] ?? []).map((item) => (item.id === itemId ? { ...item, ...patch } : item)),
+    }));
+    setFlash('Menu item updated on this device.');
+  }, []);
+
   const setReview = useCallback((status: ReviewStatus, note: string) => {
     setReviewState({ status, note: note.trim() });
     setFlash('Review status updated in the demo.');
@@ -172,6 +192,8 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     setReviewState(initialReview());
     setModeration(initialModeration());
     setScan(null);
+    setStorageError(null);
+    setPersistBlocked(false);
     setFlash('Demo data on this device was cleared.');
   }, []);
 
@@ -195,6 +217,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       removeDiary,
       toggleMenuItem,
       addMenuItem,
+      updateMenuItem,
       setReview,
       setProviderVerification,
       clearDemo,
@@ -218,6 +241,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       removeDiary,
       toggleMenuItem,
       addMenuItem,
+      updateMenuItem,
       setReview,
       setProviderVerification,
       clearDemo,

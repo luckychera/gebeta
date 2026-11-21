@@ -75,9 +75,19 @@ export function recommendFoods(profile: Profile): Recommendation[] {
   const spice = profile.preferences.includes('Mild spice')
     ? ' Mild spice is saved, but this catalogue does not rate heat, so nothing was hidden for spice.'
     : '';
+  const goal = profile.goal
+    ? ' Your goal is saved as context. Gebeta does not rank these dishes for weight change or any other outcome.'
+    : '';
+  const life =
+    profile.lifeStage === 'pregnant' || profile.lifeStage === 'breastfeeding'
+      ? ' Pregnancy or breastfeeding is saved as context only. No dish here is checked for either.'
+      : '';
+  const health = (profile.healthContext ?? []).length
+    ? ' A note about diabetes or blood pressure is personal context. It does not make a dish suitable for that condition.'
+    : '';
   const reason = because.length
-    ? `Shown because of ${because.join(' and ')}. This is catalogue filtering, not medical advice.${spice}`
-    : `Featured in the demo catalogue. Not a personal health prescription.${spice}`;
+    ? `Shown because of ${because.join(' and ')}. This is dietary-preference filtering of the demo catalogue, not a prescribed diet.${spice}${goal}${life}${health}`
+    : `Featured in the demo catalogue. Not a personal health prescription.${spice}${goal}${life}${health}`;
 
   return pool.slice(0, 3).map((food) => ({ food, reason }));
 }

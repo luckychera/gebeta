@@ -70,7 +70,7 @@ export default function HomeScreen() {
         <View style={styles.heroCopy}>
           <Text style={[styles.kicker, bodyFont]}>ON YOUR PLATE</Text>
           <Text style={[styles.heroTitle, ready ? { fontFamily: fonts.display } : null]}>Discover what's on your plate.</Text>
-          <Text style={[styles.heroBody, bodyFont]}>Explore Ethiopian foods and understand their nutrition.</Text>
+          <Text style={[styles.heroBody, bodyFont]}>Explore foods and meals, starting with Ethiopian and other local dishes, and understand their nutrition.</Text>
           <PrimaryButton label="Scan Your Meal" tone="terracotta" onPress={() => go('/(tabs)/scan')} />
         </View>
       </View>

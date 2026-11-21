@@ -28,6 +28,37 @@ test('vegetarian preference narrows recommendations', () => {
   assert.match(picks[0]?.reason ?? '', /vegetarian/i);
 });
 
+test('goals, pregnancy, and health notes stay context and do not reorder dishes', () => {
+  const base = recommendFoods({ ...emptyProfile, consent: true });
+  const withContext = recommendFoods({
+    ...emptyProfile,
+    consent: true,
+    goal: 'lose',
+    lifeStage: 'pregnant',
+    healthContext: ['Diabetes'],
+  });
+
+  assert.deepEqual(
+    withContext.map((pick) => pick.food.id),
+    base.map((pick) => pick.food.id),
+  );
+
+  const reason = withContext[0]?.reason ?? '';
+  assert.match(reason, /does not rank these dishes/i);
+  assert.match(reason, /no dish here is checked for either/i);
+  assert.match(reason, /does not make a dish suitable/i);
+  assert.doesNotMatch(reason, /weight-loss goal/i);
+});
+
+test('a gain goal does not sort dishes by energy', () => {
+  const gain = recommendFoods({ ...emptyProfile, consent: true, goal: 'gain' });
+  const base = recommendFoods({ ...emptyProfile, consent: true });
+  assert.deepEqual(
+    gain.map((pick) => pick.food.id),
+    base.map((pick) => pick.food.id),
+  );
+});
+
 test('allergy note matches a usual ingredient term', () => {
   const doro = FOODS.find((food) => food.id === 'doro-wot');
   assert.ok(doro);

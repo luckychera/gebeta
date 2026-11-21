@@ -52,7 +52,9 @@ export default function BusinessScreen() {
           <View style={styles.actions}>
             <PrimaryButton label="Approve" onPress={() => setReview('approved', note)} />
             <SecondaryButton label="Request changes" onPress={() => setReview('changes', note)} />
+            <SecondaryButton label="Reject" onPress={() => setReview('rejected', note)} />
           </View>
+          <Muted>A status set here stays on this device. It does not publish an institutional decision.</Muted>
         </Card>
       ) : null}
       {section === 'admin' ? (
@@ -84,6 +86,7 @@ export default function BusinessScreen() {
 function reviewLabel(status: ReviewStatus): string {
   if (status === 'approved') return 'Approved in the demo';
   if (status === 'changes') return 'Changes requested';
+  if (status === 'rejected') return 'Rejected in the demo';
   return 'Pending review';
 }
 

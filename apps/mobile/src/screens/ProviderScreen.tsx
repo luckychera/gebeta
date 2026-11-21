@@ -2,23 +2,30 @@ import { useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Image, Pressable, StyleSheet, Switch, Text, View } from 'react-native';
 import { QrMark } from '../components/QrMark';
-import { BackButton, Badge, Body, Card, Disclaimer, EmptyState, Field, Muted, PrimaryButton, Screen, Title } from '../components/ui';
+import { BackButton, Badge, Body, Card, Disclaimer, EmptyState, Field, Muted, PrimaryButton, Screen, SecondaryButton, Title } from '../components/ui';
 import { NUTRITION_DISCLAIMER, getFood } from '../data/foods';
 import { foodImages } from '../data/images';
 import { getProvider } from '../data/providers';
+import { buildProviderLink } from '../services/links';
 import { useAppState } from '../state/AppState';
 import { colors, radius } from '../theme/tokens';
 import { createId, formatEtb, formatKcal } from '../utils/format';
+import { currentWebBase } from '../utils/webBase';
 
 export default function ProviderScreen() {
   const { id } = useLocalSearchParams<{ id?: string }>();
   const provider = getProvider(typeof id === 'string' ? id : '');
-  const { menus, toggleMenuItem, addMenuItem, moderation } = useAppState();
+  const { menus, toggleMenuItem, addMenuItem, updateMenuItem, moderation } = useAppState();
   const [manage, setManage] = useState(false);
   const [name, setName] = useState('');
   const [price, setPrice] = useState('');
   const [description, setDescription] = useState('');
   const [formError, setFormError] = useState('');
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editName, setEditName] = useState('');
+  const [editPrice, setEditPrice] = useState('');
+  const [editDescription, setEditDescription] = useState('');
+  const [editError, setEditError] = useState('');
 
   if (!provider) {
     return (
@@ -55,6 +62,37 @@ export default function ProviderScreen() {
     setDescription('');
     setFormError('');
   };
+
+  const startEdit = (itemId: string) => {
+    const item = items.find((entry) => entry.id === itemId);
+    if (!item) return;
+    setEditingId(itemId);
+    setEditName(item.name);
+    setEditPrice(String(item.priceEtb));
+    setEditDescription(item.description);
+    setEditError('');
+  };
+
+  const saveEdit = (itemId: string) => {
+    const amount = Number(editPrice);
+    if (!editName.trim()) {
+      setEditError('Add a dish name.');
+      return;
+    }
+    if (!Number.isFinite(amount) || amount < 0) {
+      setEditError('Enter a sample price in ETB, or 0.');
+      return;
+    }
+    updateMenuItem(provider.id, itemId, {
+      name: editName.trim(),
+      description: editDescription.trim() || 'Updated in the demo.',
+      priceEtb: amount,
+    });
+    setEditingId(null);
+    setEditError('');
+  };
+
+  const link = buildProviderLink(currentWebBase(), provider.id);
 
   return (
     <Screen padded={false}>
@@ -108,6 +146,17 @@ export default function ProviderScreen() {
                   />
                 </View>
               ) : null}
+              {manage && editingId !== item.id ? <SecondaryButton label="Edit item" onPress={() => startEdit(item.id)} /> : null}
+              {manage && editingId === item.id ? (
+                <View style={styles.editor}>
+                  <Field label="Name" value={editName} onChangeText={setEditName} placeholder="Dish name" />
+                  <Field label="Sample price (ETB)" value={editPrice} onChangeText={setEditPrice} keyboardType="number-pad" placeholder="200" />
+                  <Field label="Description" value={editDescription} onChangeText={setEditDescription} placeholder="Optional" />
+                  {editError ? <Muted style={styles.error}>{editError}</Muted> : null}
+                  <PrimaryButton label="Save changes" onPress={() => saveEdit(item.id)} />
+                  <SecondaryButton label="Cancel" onPress={() => { setEditingId(null); setEditError(''); }} />
+                </View>
+              ) : null}
             </Card>
           );
         })}
@@ -122,9 +171,14 @@ export default function ProviderScreen() {
           </Card>
         ) : (
           <Card style={styles.qr}>
-            <Body>QR referral concept</Body>
-            <Muted>Encodes {provider.referralPath}. It opens this demo menu when the app handles the gebeta scheme. It is not a live public website.</Muted>
-            <QrMark value={provider.referralPath} />
+            <Body>QR referral</Body>
+            <Muted>
+              {link.kind === 'web'
+                ? `Encodes ${link.url}. Opening it in a browser loads this guest menu directly, with no account and no QR app required.`
+                : `No public web address is configured for this build, so the code encodes the app link ${link.url}. Running the web export, or setting EXPO_PUBLIC_WEB_BASE_URL, switches it to a browser address.`}
+            </Muted>
+            <QrMark value={link.url} />
+            <Muted>The kitchen, the menu, and the prices in this code are fictional demo data.</Muted>
           </Card>
         )}
         <Disclaimer>{NUTRITION_DISCLAIMER}</Disclaimer>
@@ -147,5 +201,6 @@ const styles = StyleSheet.create({
   itemTop: { flexDirection: 'row', justifyContent: 'space-between', gap: 12 },
   publish: { marginTop: 8, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   error: { color: colors.danger },
+  editor: { marginTop: 10, gap: 8 },
   qr: { alignItems: 'stretch', gap: 8 },
 });

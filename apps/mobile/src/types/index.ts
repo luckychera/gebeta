@@ -33,7 +33,9 @@ export type FoodRecord = {
   dietaryNotes: string[];
 };
 
-export type ProfileGoal = '' | 'maintain' | 'weight' | 'healthy';
+export type ProfileGoal = '' | 'maintain' | 'weight' | 'lose' | 'gain' | 'healthy';
+
+export type LifeStage = '' | 'pregnant' | 'breastfeeding';
 
 export type Profile = {
   displayName: string;
@@ -41,8 +43,10 @@ export type Profile = {
   age: string;
   gender: string;
   activity: string;
+  lifeStage: LifeStage;
   preferences: string[];
   allergies: string;
+  healthContext: string[];
   goal: ProfileGoal;
   energyReference: string;
 };
@@ -80,10 +84,9 @@ export type ProviderRecord = {
   city: string;
   summary: string;
   manageable: boolean;
-  referralPath: string;
 };
 
-export type ReviewStatus = 'pending' | 'approved' | 'changes';
+export type ReviewStatus = 'pending' | 'approved' | 'changes' | 'rejected';
 
 export type ReviewState = {
   status: ReviewStatus;
