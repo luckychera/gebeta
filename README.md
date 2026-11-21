@@ -8,10 +8,23 @@ recommendations.
 
 ## Architecture
 
-- React + TypeScript — Web frontend
-- Node.js + Express — Backend API
-- Supabase — PostgreSQL, Authentication, and Storage
+- React + TypeScript — Web frontend (`apps/web`, not built yet)
+- React Native + Expo + TypeScript — Mobile demo (`apps/mobile`)
+- Node.js + Express — Backend API (`backend`, not built yet)
+- Supabase — PostgreSQL, Authentication, and Storage (planned)
 - Provider-independent AI architecture
+
+## Mobile demo
+
+Gebeta NutriGuider lives in `apps/mobile`. The repository does not yet ship an Express API, so the app uses the local catalogue, a labelled demo recognition flow, and on-device storage.
+
+```bash
+cd apps/mobile
+npm install
+npm test
+npm run typecheck
+npx expo start
+```
 
 ## Project Structure
 
