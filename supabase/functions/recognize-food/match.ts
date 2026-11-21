@@ -1,5 +1,8 @@
 // Matching model output against the Gebeta catalogue.
 //
+// index.ts carries a copy of these two functions so the dashboard can deploy
+// one file. Change both together.
+//
 // The model is asked for a dish name. It is never asked for, and never
 // trusted with, a catalogue identifier or a nutrition value. Anything that
 // does not match a published catalogue row comes back with foodSlug null so

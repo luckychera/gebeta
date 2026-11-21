@@ -55,6 +55,10 @@ Every statement is additive. Nothing is dropped and re-running a file does not o
 
 ### 3. Gemini recognition (optional)
 
+From the dashboard, open Edge Functions, edit `recognize-food`, and replace the code with the whole of `supabase/functions/recognize-food/index.ts`. The file must stay named `index.ts`. It is self-contained: `cors.ts` and `match.ts` are not the function, and deploying only those two leaves the endpoint hanging. Add a secret named `GEMINI_API_KEY`, leave "Verify JWT" on, and deploy.
+
+The same deploy from the CLI:
+
 ```bash
 supabase secrets set GEMINI_API_KEY=your_key
 supabase secrets set GEMINI_MODEL=gemini-2.5-flash   # optional

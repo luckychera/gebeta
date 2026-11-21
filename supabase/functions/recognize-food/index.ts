@@ -14,10 +14,70 @@
 // Required secrets:
 //   GEMINI_API_KEY   the API key, set with `supabase secrets set`
 //   GEMINI_MODEL     optional, defaults to gemini-2.5-flash
+//
+// This file is the entrypoint and it is self-contained. The Supabase
+// dashboard runs whichever file is named index.ts. cors.ts and match.ts do
+// not start a server, so deploying those two alone leaves the function
+// hanging. Paste this file, named index.ts, and nothing else is required.
+// The catalogue matching rules are duplicated in match.ts so the unit tests
+// can run them under Node. Keep the two copies the same.
 
 import { createClient } from 'jsr:@supabase/supabase-js@2';
-import { corsHeaders, jsonResponse, unavailable } from './cors.ts';
-import { matchCatalogue, type CatalogueEntry } from './match.ts';
+
+const corsHeaders: Record<string, string> = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+};
+
+function jsonResponse(body: unknown, status = 200): Response {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+  });
+}
+
+function unavailable(reason: string, status = 200): Response {
+  return jsonResponse({ status: 'unavailable', reason, candidates: [] }, status);
+}
+
+type CatalogueEntry = { slug: string; name: string; localNames: string[] };
+
+function normalize(value: string): string {
+  return value
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/['’`]/g, '')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+}
+
+function matchCatalogue(candidateName: string, catalogue: CatalogueEntry[]): string | null {
+  const needle = normalize(candidateName);
+  if (!needle) return null;
+
+  for (const entry of catalogue) {
+    const names = [entry.slug, entry.name, ...entry.localNames].map(normalize);
+    if (names.includes(needle)) return entry.slug;
+  }
+
+  if (needle.length < 4) return null;
+
+  let bestSlug: string | null = null;
+  let bestLength = 0;
+  for (const entry of catalogue) {
+    const names = [entry.slug, entry.name, ...entry.localNames].map(normalize).filter((name) => name.length >= 4);
+    for (const name of names) {
+      if (!needle.includes(name) && !name.includes(needle)) continue;
+      if (name.length > bestLength) {
+        bestLength = name.length;
+        bestSlug = entry.slug;
+      }
+    }
+  }
+  return bestSlug;
+}
 
 const GEMINI_MODEL = Deno.env.get('GEMINI_MODEL') ?? 'gemini-2.5-flash';
 const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY') ?? '';
