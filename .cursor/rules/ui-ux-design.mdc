@@ -1,0 +1,46 @@
+---
+description: Mandatory Gebeta visual design and multilingual UX requirements
+globs:
+  - "apps/web/**/*"
+alwaysApply: false
+---
+
+# Gebeta UI/UX Design Rules
+
+Before creating or modifying frontend components, pages, layouts, or styles:
+
+1. Read `docs/UI_UX_DESIGN_SYSTEM.md`.
+2. Follow the Black Glassmorphism visual identity.
+3. Reuse existing design tokens and UI components.
+4. Maintain consistent responsive layouts and smooth transitions.
+5. Follow accessibility and performance requirements.
+6. Implement multilingual support according to the design specification.
+
+## Multilingual Requirements
+
+The supported languages are:
+
+- English (en)
+- Amharic (am)
+- Afaan Oromo (om)
+- Somali (so)
+- Tigrinya (ti)
+- French (fr)
+- Arabic (ar)
+
+Rules:
+
+- Use an appropriate internationalization architecture.
+- Do not hardcode user-facing interface strings in components.
+- Keep translations in organized language resource files.
+- Provide a language selector.
+- Persist language preferences.
+- Support RTL layout for Arabic.
+- Ensure fonts correctly render Ethiopic and Arabic scripts.
+- Ensure responsive layouts accommodate translated text.
+- Provide English fallback translations.
+- Translate navigation, forms, validation messages, dashboards, and notifications.
+
+Do not treat multilingual support as a decorative feature or postpone its architecture until the end.
+
+Do not introduce an unrelated visual style or generic dashboard template.
