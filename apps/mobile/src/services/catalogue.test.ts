@@ -19,7 +19,7 @@ test('breakfast filter returns breakfast dishes only', () => {
 });
 
 test('vegetarian preference narrows recommendations', () => {
-  const picks = recommendFoods({
+  const picks = recommendFoods(FOODS, {
     ...emptyProfile,
     consent: true,
     preferences: ['Vegetarian'],
@@ -29,8 +29,8 @@ test('vegetarian preference narrows recommendations', () => {
 });
 
 test('goals, pregnancy, and health notes stay context and do not reorder dishes', () => {
-  const base = recommendFoods({ ...emptyProfile, consent: true });
-  const withContext = recommendFoods({
+  const base = recommendFoods(FOODS, { ...emptyProfile, consent: true });
+  const withContext = recommendFoods(FOODS, {
     ...emptyProfile,
     consent: true,
     goal: 'lose',
@@ -51,8 +51,8 @@ test('goals, pregnancy, and health notes stay context and do not reorder dishes'
 });
 
 test('a gain goal does not sort dishes by energy', () => {
-  const gain = recommendFoods({ ...emptyProfile, consent: true, goal: 'gain' });
-  const base = recommendFoods({ ...emptyProfile, consent: true });
+  const gain = recommendFoods(FOODS, { ...emptyProfile, consent: true, goal: 'gain' });
+  const base = recommendFoods(FOODS, { ...emptyProfile, consent: true });
   assert.deepEqual(
     gain.map((pick) => pick.food.id),
     base.map((pick) => pick.food.id),

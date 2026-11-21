@@ -7,23 +7,32 @@ Status: Implementation baseline
 
 This section records what the hackathon branch delivers. Section 2 onward is the original plan, kept for reference.
 
-The demo is delivered as an **Expo client exported to the web**, not as a separate React and Vite website. One codebase serves the browser demo and a phone-capable client. Data lives on the device in AsyncStorage. See `docs/ARCHITECTURE.md` section 0.
+The demo is delivered as an **Expo client exported to the web**, not as a separate React and Vite website. One codebase serves the browser demo and a phone-capable client. The client talks to a real Supabase project: Auth for accounts, PostgreSQL for data, Storage for images, and one edge function for the Gemini call. See `docs/ARCHITECTURE.md` section 0.
+
+What is real rather than simulated:
+
+- **Accounts.** Supabase Auth with email and password, email confirmation, a persisted session, and sign out.
+- **Data.** Catalogue, diary, profile, preferences, providers, menus, submissions, and reviews are PostgreSQL rows. Every table has row level security, so a diary entry is unreachable by anyone but its owner even with a crafted request.
+- **Roles.** Provider, institution, and administrator capabilities come from `user_roles` and `provider_members`, granted in the database. Hiding a button is not what stops an unauthorized write; the policy is.
+- **Images.** Catalogue images are public; user uploads go to a private bucket under a path keyed to the user's id and are read through short-lived signed URLs. Keeping an uploaded photo is off by default and requires an explicit switch.
+- **Recognition.** Google Gemini, called from the `recognize-food` edge function so the key never reaches the browser.
 
 Deviations accepted for this demo:
 
 - **No public desktop website.** The web export is a phone-width column, framed and centred on large screens. It is responsive in the sense that it works on both, not in the sense of a distinct desktop layout.
-- **No account system.** Sign-in stores a display name on the device. There is no password, session, role, or recovery. Every actor view is reachable from the same device, which is how the demo is presented.
-- **No backend or database.** Diary, profile, menus, review status, and moderation status are a single on-device record. Nothing is transmitted.
-- **Recognition is a labelled demo.** `recognizeDemo` matches against the local catalogue from the image reference. No model reads the image, and the UI says so on the scan screen, the result badge, and the notices screen.
-- **Nutrition is illustrative.** Values are demo estimates with a serving basis and an explicit source label. Unknown nutrients stay unknown.
+- **No Express tier.** Authorization lives in row level security instead of API handlers. `backend/` is still empty.
+- **Nutrition is illustrative.** Seeded values are labelled `illustrative-demo` with a serving basis and a source. Unknown nutrients stay `NULL` and display as unknown. Gemini is forbidden from supplying nutrition at all.
+- **Recognition without a key is a labelled fallback.** If `GEMINI_API_KEY` is not set, or the call fails, the app matches against the catalogue and states on screen that no model analysed the image. It never presents the fallback as an AI result.
 - **Recommendations are preference filters only.** Vegetarian, no-raw-meat, and high-protein preferences filter the catalogue. Age, gender, activity, a weight goal, pregnancy or breastfeeding, and a diabetes or blood pressure note are stored as context and shown as context. They never rank or restrict dishes, because that would be clinical advice the demo cannot support.
-- **Provider QR uses the real public route.** The code encodes the deployed web URL for `/provider/{id}` when a web origin is available, and falls back to the `gebeta://` app link otherwise.
+- **Provider QR uses the real public route.** The code encodes the deployed web URL for `/provider/{slug}` when a web origin is available, and falls back to the `gebeta://` app link otherwise.
+- **Signed out, the app still runs.** It uses the bundled catalogue and on-device storage, clearly marked as on-device. Local data is never uploaded over account data on sign-in.
 
 Still open at the end of the hackathon branch:
 
-- Institution review covers one seeded submission, with approve, request changes, and reject. There is no reviewer identity or submission history.
-- Admin moderation covers one fictional provider status plus an activity list.
+- Role grants are a manual database step. There is no administrator screen for granting a role or adding a provider member.
+- Admin moderation covers provider status plus the audit list. Users are not listed.
 - Provider menus support add, edit, and publish or unpublish. There is no allergen field and no provider-profile editing.
+- Password reset and account deletion are not built.
 
 ## 1. Purpose
 

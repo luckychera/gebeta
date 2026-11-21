@@ -1,0 +1,6 @@
+project_id = "gebeta"
+
+[functions.recognize-food]
+# The function reads auth.uid() from the caller's token for the rate limit and
+# refuses an anonymous request, so the JWT check must stay on.
+verify_jwt = true

@@ -1,8 +1,10 @@
-import { FOODS } from '../data/foods';
-import type { RecognitionResult } from '../types';
+import type { FoodRecord, RecognitionResult } from '../types';
 
-const NOTICE =
-  'Demo recognition. No AI model analyzed this image. Suggestions come from the local Gebeta catalogue.';
+export const DEMO_NOTICE =
+  'Demo fallback. No AI model analyzed this image. The suggestions below are drawn from the local Gebeta catalogue so the journey can still be shown.';
+
+const DEMO_SCORE_NOTE =
+  'There is no confidence score here because no model ran. Pick the right dish yourself before saving anything.';
 
 function hashString(value: string): number {
   let hash = 0;
@@ -12,47 +14,63 @@ function hashString(value: string): number {
   return hash;
 }
 
-function roundScore(value: number): number {
-  return Math.round(value * 100) / 100;
-}
+/**
+ * The offline path. It never claims to have looked at the photo: the order is
+ * derived from the image reference only so the same picture gives the same
+ * list twice in a row during a demonstration.
+ */
+export function recognizeDemo(input: {
+  foods: FoodRecord[];
+  sampleFoodId?: string | undefined;
+  imageUri?: string | null | undefined;
+  reason?: string | undefined;
+}): RecognitionResult {
+  const foods = input.foods;
 
-export function recognizeDemo(input: { sampleFoodId?: string; imageUri?: string | null }): RecognitionResult {
+  if (foods.length === 0) {
+    return {
+      provider: 'demo-fallback',
+      status: 'unavailable',
+      isDemo: true,
+      model: null,
+      notice: 'No catalogue is loaded, so nothing can be suggested. Try again once the catalogue has loaded.',
+      scoreNote: DEMO_SCORE_NOTE,
+      candidates: [],
+    };
+  }
+
   let topIndex = 0;
-  let topScore = 0.62;
-  let scoreNote = 'Demo match score. It is not a probability from a recognition model.';
+  let explanation = 'First entry in the demo catalogue.';
 
   if (input.sampleFoodId) {
-    const found = FOODS.findIndex((food) => food.id === input.sampleFoodId);
+    const found = foods.findIndex((food) => food.id === input.sampleFoodId);
     if (found >= 0) {
       topIndex = found;
-      topScore = 0.86;
-      scoreNote = 'Demo match score for a sample you chose. No model looked at an image.';
+      explanation = 'This is the sample dish you picked, not a model result.';
     }
   } else if (input.imageUri) {
-    const hash = hashString(input.imageUri);
-    topIndex = hash % FOODS.length;
-    topScore = roundScore(0.58 + (hash % 17) / 100);
-    scoreNote =
-      'Demo match score derived from the image reference so the result stays repeatable. No AI model analyzed the photo.';
+    topIndex = hashString(input.imageUri) % foods.length;
+    explanation = 'Chosen from the image reference so the demo stays repeatable. No model saw the photo.';
   }
 
-  const top = FOODS[topIndex];
-  const alt = FOODS[(topIndex + 1) % FOODS.length];
-  const third = FOODS[(topIndex + 2) % FOODS.length];
-  if (!top || !alt || !third) {
-    throw new Error('Demo catalogue is empty.');
-  }
+  const picks = [topIndex, (topIndex + 1) % foods.length, (topIndex + 2) % foods.length]
+    .filter((value, index, list) => list.indexOf(value) === index)
+    .map((index) => foods[index])
+    .filter((food): food is FoodRecord => Boolean(food));
 
   return {
-    provider: 'mock',
+    provider: 'demo-fallback',
     status: 'matched',
     isDemo: true,
-    notice: NOTICE,
-    scoreNote,
-    candidates: [
-      { foodId: top.id, label: top.name, demoScore: topScore },
-      { foodId: alt.id, label: alt.name, demoScore: roundScore(topScore * 0.62) },
-      { foodId: third.id, label: third.name, demoScore: roundScore(topScore * 0.41) },
-    ],
+    model: null,
+    notice: input.reason ? `${DEMO_NOTICE} ${input.reason}` : DEMO_NOTICE,
+    scoreNote: DEMO_SCORE_NOTE,
+    candidates: picks.map((food, position) => ({
+      foodId: food.id,
+      label: food.name,
+      localName: food.localNames[0] ?? null,
+      confidence: null,
+      explanation: position === 0 ? explanation : 'Another catalogue dish offered so you can correct the first guess.',
+    })),
   };
 }

@@ -1,8 +1,17 @@
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Badge, Body, Card, Chip, Field, Muted, PrimaryButton, Screen, SecondaryButton, Title } from '../components/ui';
 import { go } from '../navigation/go';
+import { getSupabase } from '../services/supabase/client';
+import {
+  createSubmission,
+  fetchVisibleSubmissions,
+  submitReview,
+  type SubmissionSummary,
+} from '../services/supabase/repositories/submissions';
 import { useAppState } from '../state/AppState';
+import { useAuth } from '../state/AuthState';
+import { colors } from '../theme/tokens';
 import type { ReviewStatus } from '../types';
 import { timeLabel } from '../utils/dates';
 
@@ -41,6 +50,7 @@ export default function BusinessScreen() {
           <PrimaryButton label="Open provider menus" onPress={() => go('/providers')} />
         </View>
       ) : null}
+      {section === 'review' ? <SubmissionReview /> : null}
       {section === 'review' ? (
         <Card>
           <Badge label="Fictional submission" tone="neutral" />
@@ -80,6 +90,116 @@ export default function BusinessScreen() {
         </View>
       ) : null}
     </Screen>
+  );
+}
+
+/**
+ * The review workflow backed by Supabase.
+ *
+ * Deciding a submission is intentionally allowed to fail here. A reviewer can
+ * only write food_reviews for a submission an administrator assigned to them,
+ * and when the database refuses, its reason is shown rather than hidden.
+ */
+function SubmissionReview() {
+  const { status, userId, roles } = useAuth();
+  const client = getSupabase();
+  const [items, setItems] = useState<SubmissionSummary[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+  const [note, setNote] = useState('');
+
+  const load = useCallback(async () => {
+    if (!client || !userId) return;
+    setLoading(true);
+    const result = await fetchVisibleSubmissions(client, userId);
+    setLoading(false);
+    if (result.ok) setItems(result.data);
+    else setMessage(result.message);
+  }, [client, userId]);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  if (!client) {
+    return (
+      <Card>
+        <Body>Submission review</Body>
+        <Muted>Supabase is not configured in this build, so only the sample card below is available.</Muted>
+      </Card>
+    );
+  }
+  if (status !== 'signed-in' || !userId) {
+    return (
+      <Card>
+        <Body>Submission review</Body>
+        <Muted>Sign in to send a food record for review or to act on one assigned to you.</Muted>
+        <PrimaryButton label="Sign in" onPress={() => go('/signin')} />
+      </Card>
+    );
+  }
+
+  return (
+    <Card>
+      <Body>Submission review</Body>
+      <Muted>
+        Live records from Supabase. You see your own submissions, plus any an administrator assigned to you.
+        {roles.includes('institution') ? ' This account holds the institution role.' : ' This account does not hold the institution role.'}
+      </Muted>
+      {loading ? <Muted>Loading submissions…</Muted> : null}
+      {message ? <Muted style={styles.error}>{message}</Muted> : null}
+      {!loading && items.length === 0 ? <Muted>No submissions are visible to this account yet.</Muted> : null}
+      {items.map((item) => (
+        <View key={item.id} style={styles.event}>
+          <Body>{item.name}</Body>
+          <Muted>
+            {item.status} · {item.mine ? 'submitted by you' : 'assigned to you for review'}
+          </Muted>
+          {!item.mine ? (
+            <View style={styles.actions}>
+              <PrimaryButton
+                label="Approve"
+                onPress={() => {
+                  void submitReview(client, { submissionId: item.id, reviewerId: userId, status: 'approved', note }).then(
+                    (result) => {
+                      setMessage(result.ok ? 'Review recorded.' : result.message);
+                      void load();
+                    },
+                  );
+                }}
+              />
+              <SecondaryButton
+                label="Request changes"
+                onPress={() => {
+                  void submitReview(client, { submissionId: item.id, reviewerId: userId, status: 'changes', note }).then(
+                    (result) => {
+                      setMessage(result.ok ? 'Review recorded.' : result.message);
+                      void load();
+                    },
+                  );
+                }}
+              />
+            </View>
+          ) : null}
+        </View>
+      ))}
+      <Field label="Reviewer note" value={note} onChangeText={setNote} placeholder="Optional note stored with the decision" multiline />
+      <SecondaryButton
+        label="Send a sample submission"
+        onPress={() => {
+          void createSubmission(client, {
+            userId,
+            name: 'Kocho serving description',
+            description: 'One piece, about 120 g, served as bread.',
+            note: 'Sample submission created from the Gebeta demo.',
+            imagePath: null,
+          }).then((result) => {
+            setMessage(result.ok ? 'Submission created and waiting for assignment.' : result.message);
+            void load();
+          });
+        }}
+      />
+    </Card>
   );
 }
 
@@ -129,4 +249,5 @@ const styles = StyleSheet.create({
   actor: { gap: 4 },
   actions: { gap: 8, marginTop: 8 },
   event: { marginTop: 10, gap: 2 },
+  error: { color: colors.danger },
 });

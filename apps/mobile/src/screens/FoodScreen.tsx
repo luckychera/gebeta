@@ -1,21 +1,27 @@
 import { useLocalSearchParams } from 'expo-router';
 import { Image, StyleSheet, View } from 'react-native';
 import { BackButton, Badge, Body, Card, Disclaimer, Muted, PrimaryButton, Screen, Title } from '../components/ui';
-import { IMAGE_LIMIT, NUTRITION_DISCLAIMER, getFood } from '../data/foods';
+import { IMAGE_LIMIT, NUTRITION_DISCLAIMER } from '../data/foods';
 import { imageFor } from '../data/images';
 import { go } from '../navigation/go';
+import { useAppState } from '../state/AppState';
 import { colors, radius } from '../theme/tokens';
 import { formatKcal } from '../utils/format';
 
 export default function FoodScreen() {
   const { id } = useLocalSearchParams<{ id?: string }>();
+  const { getFood, catalogueLoading } = useAppState();
   const food = getFood(typeof id === 'string' ? id : '');
 
   if (!food) {
     return (
       <Screen>
-        <Title>Dish not found</Title>
-        <Body>That record is not in the demo catalogue.</Body>
+        <Title>{catalogueLoading ? 'Loading the catalogue…' : 'Dish not found'}</Title>
+        <Body>
+          {catalogueLoading
+            ? 'One moment while the Gebeta catalogue loads.'
+            : 'That record is not in the catalogue.'}
+        </Body>
       </Screen>
     );
   }
@@ -29,7 +35,7 @@ export default function FoodScreen() {
         </View>
       </View>
       <View style={styles.sheet}>
-        <Badge label="Demo catalogue" />
+        <Badge label={food.verificationStatus === 'institution-reviewed' ? 'Institution reviewed' : 'Illustrative estimate'} />
         <Title>{food.name}</Title>
         {food.localNames.length > 1 ? <Muted>Also called {food.localNames.filter((name) => name.toLowerCase() !== food.name.toLowerCase()).join(', ')}</Muted> : null}
         <Body>{food.description}</Body>

@@ -15,7 +15,10 @@ export type NutrientSet = {
 };
 
 export type FoodRecord = {
+  /** Catalogue slug. Used in deep links such as /food/injera. */
   id: string;
+  /** Database UUID when the record came from Supabase, null for bundled data. */
+  remoteId?: string | null;
   name: string;
   localNames: string[];
   description: string;
@@ -28,7 +31,7 @@ export type FoodRecord = {
   servingGrams: number | null;
   nutrition: NutrientSet;
   nutritionSource: string;
-  verificationStatus: 'illustrative-demo';
+  verificationStatus: 'illustrative-demo' | 'institution-reviewed';
   assumptions: string;
   dietaryNotes: string[];
 };
@@ -78,7 +81,9 @@ export type MenuItem = {
 };
 
 export type ProviderRecord = {
+  /** Provider slug. Used in the public link /provider/kafa-terrace. */
   id: string;
+  remoteId?: string | null;
   name: string;
   kind: 'Hotel' | 'Café';
   city: string;
@@ -107,15 +112,25 @@ export type ModerationState = {
 };
 
 export type RecognitionCandidate = {
-  foodId: string;
+  /** Catalogue slug when the candidate matched a Gebeta food, otherwise null. */
+  foodId: string | null;
   label: string;
-  demoScore: number;
+  localName: string | null;
+  /** Model-reported confidence in 0..1, or null when the model gave none. */
+  confidence: number | null;
+  explanation: string;
 };
 
+export type RecognitionProvider = 'gemini' | 'demo-fallback';
+
+export type RecognitionStatus = 'matched' | 'no_match' | 'unavailable';
+
 export type RecognitionResult = {
-  provider: 'mock';
-  status: 'matched';
-  isDemo: true;
+  provider: RecognitionProvider;
+  status: RecognitionStatus;
+  /** True when no AI model looked at the image. */
+  isDemo: boolean;
+  model: string | null;
   notice: string;
   scoreNote: string;
   candidates: RecognitionCandidate[];
