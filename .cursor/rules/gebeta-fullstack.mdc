@@ -1,0 +1,28 @@
+---
+description: Mandatory full-stack implementation rules for Gebeta
+alwaysApply: true
+---
+
+# Gebeta Full-Stack Rules
+
+- Read the root AGENTS.md before implementation.
+- Inspect existing code before modifying it.
+- Build a real integrated application, not a frontend-only prototype.
+- Use React, TypeScript, and Vite for the frontend.
+- Use Node.js and Express for the backend.
+- Use Supabase Auth for authentication.
+- Use Supabase PostgreSQL for persistent data.
+- Use Supabase Storage for images.
+- Use real Express API endpoints for business operations.
+- Verify Supabase-issued access tokens in the backend.
+- Enforce backend authorization and database RLS.
+- Keep service-role and AI credentials on the backend.
+- Do not use hardcoded arrays as substitutes for core database functionality.
+- Do not invent endpoints, database fields, or integrations.
+- Do not introduce fake authentication or fake database services.
+- Keep demo workflows simple, but fully functional.
+- Use realistic database seed data for demonstration.
+- Clearly label AI fallbacks and nutritional estimates.
+- Update documentation when implementation changes.
+- Test actual frontend/backend integration.
+- Do not claim untested functionality works.
