@@ -1,0 +1,22 @@
+---
+description: Gebeta frontend development rules
+globs: apps/web/**
+alwaysApply: false
+---
+
+# Frontend Rules
+
+- Use the existing React, TypeScript, and Vite setup.
+- Inspect the existing components and routing before creating new ones.
+- Follow the Gebeta UI design system.
+- Build responsive layouts for mobile and desktop.
+- Reuse existing UI components.
+- Keep business logic out of presentation components.
+- Use typed API response models.
+- Do not invent backend endpoints.
+- Implement loading, empty, error, and success states.
+- Ensure all visible buttons and links perform real actions.
+- Clearly label mock data and demo integrations.
+- Do not expose service-role keys or AI credentials.
+- Avoid unnecessary dependencies.
+- Avoid large rewrites when a focused change is sufficient.

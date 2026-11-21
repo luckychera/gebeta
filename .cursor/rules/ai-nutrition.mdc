@@ -1,0 +1,22 @@
+---
+description: Gebeta AI recognition and nutrition integrity rules
+globs:
+  - apps/web/**
+  - backend/**
+alwaysApply: false
+---
+
+# AI and Nutrition Rules
+
+- Read `/docs/AI_NUTRITION_SAFETY.md`.
+- Treat image recognition as probabilistic.
+- Return candidate foods rather than claiming certainty.
+- Allow user confirmation and correction.
+- Support manual food search when recognition fails.
+- Show serving basis and nutrition source.
+- Preserve unknown nutrient values.
+- Never fabricate nutrition values.
+- Never label AI output as institution-verified.
+- Clearly distinguish mock recognition from external AI recognition.
+- Do not infer exact ingredients, allergens, oil quantity, recipe proportions, or serving weight from an image.
+- Do not provide diagnosis or treatment recommendations.

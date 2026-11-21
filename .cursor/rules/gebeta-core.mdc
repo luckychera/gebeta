@@ -1,0 +1,21 @@
+---
+description: Core Gebeta product and implementation rules
+alwaysApply: true
+---
+
+# Gebeta Core Rules
+
+- Read `/AGENTS.md` before making changes.
+- Follow `/docs/DEMO_SCOPE.md` for hackathon priorities.
+- Follow `/docs/PRODUCT_REQUIREMENTS.md` for expected product behavior.
+- Follow `/docs/ARCHITECTURE.md` for the selected architecture.
+- Follow `/docs/UI_UX_DESIGN_SYSTEM.md` for visual design.
+- This is a hackathon demo, not a complete production implementation.
+- Prefer working vertical journeys over incomplete feature breadth.
+- Inspect existing code before changing it.
+- Never invent API endpoints, database tables, or integrations.
+- Clearly label mock data and mock AI results.
+- Do not expose server secrets in frontend code.
+- Preserve privacy and role boundaries.
+- Do not make medical claims or fabricate nutrition data.
+- Run relevant checks after implementation.
