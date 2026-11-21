@@ -1,0 +1,39 @@
+{
+  "expo": {
+    "name": "Gebeta NutriGuider",
+    "slug": "gebeta-nutriguider",
+    "scheme": "gebeta",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "backgroundColor": "#FAF9F5",
+    "android": {
+      "package": "app.gebeta.nutriguider",
+      "backgroundColor": "#FAF9F5"
+    },
+    "ios": {
+      "bundleIdentifier": "app.gebeta.nutriguider",
+      "supportsTablet": true
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "single",
+      "backgroundColor": "#E7EFE8"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Gebeta uses your photo library so you can choose a meal image for demo recognition.",
+          "cameraPermission": "Gebeta uses the camera to photograph a meal for demo recognition."
+        }
+      ],
+      "expo-status-bar",
+      "expo-font"
+    ],
+    "experiments": {
+      "typedRoutes": false
+    }
+  }
+}

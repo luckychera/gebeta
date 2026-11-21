@@ -17,10 +17,6 @@ jobs:
   frontend:
     name: Frontend checks
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: apps/web
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
@@ -29,31 +25,51 @@ jobs:
         uses: actions/setup-node@v7
         with:
           node-version: 22
-          cache: npm
-          cache-dependency-path: apps/web/package-lock.json
 
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Lint
-        run: npm run lint
-
-      - name: Type check
-        run: npm run typecheck
-
-      - name: Run tests
-        run: npm test -- --run
-
-      - name: Production build
-        run: npm run build
+      - name: Web checks when the web app exists
+        working-directory: apps/web
+        run: |
+          if [ ! -f package.json ]; then
+            echo "apps/web has no package.json yet. Skipping web checks."
+            exit 0
+          fi
+          npm ci
+          npm run lint
+          npm run typecheck
+          npm test -- --run
+          npm run build
 
   backend:
     name: Backend checks
     runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+
+      - name: Backend checks when the API exists
+        working-directory: backend
+        run: |
+          if [ ! -f package.json ]; then
+            echo "backend has no package.json yet. Skipping backend checks."
+            exit 0
+          fi
+          npm ci
+          npm run lint
+          npm run typecheck
+          npm test
+          npm run build
+
+  mobile:
+    name: Mobile checks
+    runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: backend
-
+        working-directory: apps/mobile
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
@@ -63,19 +79,13 @@ jobs:
         with:
           node-version: 22
           cache: npm
-          cache-dependency-path: backend/package-lock.json
+          cache-dependency-path: apps/mobile/package-lock.json
 
       - name: Install dependencies
         run: npm ci
-
-      - name: Lint
-        run: npm run lint
 
       - name: Type check
         run: npm run typecheck
 
       - name: Run tests
         run: npm test
-
-      - name: Production build
-        run: npm run build

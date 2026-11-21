@@ -1,0 +1,12 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "installCommand": "npm install --prefix apps/mobile",
+  "buildCommand": "npm run export:web --prefix apps/mobile",
+  "outputDirectory": "apps/mobile/dist",
+  "rewrites": [
+    {
+      "source": "/((?!_expo|assets|favicon|metadata.json).*)",
+      "destination": "/index.html"
+    }
+  ]
+}

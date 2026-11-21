@@ -1,7 +1,29 @@
 # Gebeta — Hackathon Demo Scope
 
-Version: 1.0
+Version: 1.1
 Status: Implementation baseline
+
+## 0. Delivered Demo and Accepted Deviations
+
+This section records what the hackathon branch delivers. Section 2 onward is the original plan, kept for reference.
+
+The demo is delivered as an **Expo client exported to the web**, not as a separate React and Vite website. One codebase serves the browser demo and a phone-capable client. Data lives on the device in AsyncStorage. See `docs/ARCHITECTURE.md` section 0.
+
+Deviations accepted for this demo:
+
+- **No public desktop website.** The web export is a phone-width column, framed and centred on large screens. It is responsive in the sense that it works on both, not in the sense of a distinct desktop layout.
+- **No account system.** Sign-in stores a display name on the device. There is no password, session, role, or recovery. Every actor view is reachable from the same device, which is how the demo is presented.
+- **No backend or database.** Diary, profile, menus, review status, and moderation status are a single on-device record. Nothing is transmitted.
+- **Recognition is a labelled demo.** `recognizeDemo` matches against the local catalogue from the image reference. No model reads the image, and the UI says so on the scan screen, the result badge, and the notices screen.
+- **Nutrition is illustrative.** Values are demo estimates with a serving basis and an explicit source label. Unknown nutrients stay unknown.
+- **Recommendations are preference filters only.** Vegetarian, no-raw-meat, and high-protein preferences filter the catalogue. Age, gender, activity, a weight goal, pregnancy or breastfeeding, and a diabetes or blood pressure note are stored as context and shown as context. They never rank or restrict dishes, because that would be clinical advice the demo cannot support.
+- **Provider QR uses the real public route.** The code encodes the deployed web URL for `/provider/{id}` when a web origin is available, and falls back to the `gebeta://` app link otherwise.
+
+Still open at the end of the hackathon branch:
+
+- Institution review covers one seeded submission, with approve, request changes, and reject. There is no reviewer identity or submission history.
+- Admin moderation covers one fictional provider status plus an activity list.
+- Provider menus support add, edit, and publish or unpublish. There is no allergen field and no provider-profile editing.
 
 ## 1. Purpose
 

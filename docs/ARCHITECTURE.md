@@ -1,7 +1,39 @@
 # Gebeta — Demo Architecture
 
-Version: 1.0
+Version: 1.1
 Status: Hackathon implementation baseline
+
+## 0. Implemented Architecture in This Repository
+
+Sections 2 onward describe the target architecture. This section records what the repository actually contains today, so the two are never confused.
+
+### Phase 1 — implemented
+
+| Concern | Implementation | Location |
+| --- | --- | --- |
+| Client | Expo SDK 58, React Native, Expo Router, React 19, TypeScript | `apps/mobile` |
+| Web delivery | Expo web export (`expo export --platform web`), single-page output | `apps/mobile/dist` |
+| Persistence | AsyncStorage, one record under `gebeta.nutriguider.v1` | `apps/mobile/src/state/AppState.tsx` |
+| Food catalogue | Local TypeScript data with illustrative estimates | `apps/mobile/src/data/foods.ts` |
+| Recognition | Deterministic demo adapter, labelled as a demo in the UI | `apps/mobile/src/services/recognition.ts` |
+| Providers, review, moderation | Seeded fictional records held in the same on-device state | `apps/mobile/src/data/providers.ts` |
+
+There is no authentication, no server session, no role enforcement, and no network call to a Gebeta API in Phase 1. Every actor view runs on one device, and the screens say so.
+
+### Phase 2 — planned, not implemented
+
+- Node.js and Express API in `backend`.
+- Supabase PostgreSQL as the application database.
+- Supabase Auth for accounts, sessions, and roles.
+- Supabase Storage for uploaded meal images.
+- An external AI recognition provider behind the adapter interface in section 5.
+- A React and Vite web client in `apps/web` if the phone-shaped web export stops being sufficient.
+
+The placeholder directories `apps/web` and `backend` exist but contain no application code. Do not describe any Phase 2 capability as available.
+
+### Why the demo client is Expo
+
+The demo needed one coherent vertical journey — discover, scan, confirm, nutrition, diary — plus provider, institution, and admin supporting views, within a hackathon timebox. Building that once in Expo and exporting it to the web gave a working browser demo and a phone-capable client from a single codebase. The cost is that the web demo is a phone-width layout rather than a full desktop website, and that the actor boundaries are presentational rather than enforced. Both limits are recorded in `docs/DEMO_SCOPE.md`.
 
 ## 1. Architecture Goal
 
@@ -12,6 +44,8 @@ The hackathon implementation should remain simple.
 Do not introduce infrastructure that is not required to demonstrate the product.
 
 ## 2. Selected Technology
+
+The technology below is the target for Phase 2. For what exists today, see section 0.
 
 ### Frontend
 
