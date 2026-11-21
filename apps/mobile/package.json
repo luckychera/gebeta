@@ -9,7 +9,7 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "typecheck": "tsc --noEmit",
-    "test": "tsx --test src/services/nutrition.test.ts src/services/catalogue.test.ts src/services/recognition.test.ts src/utils/profile.test.ts src/services/qr.test.ts",
+    "test": "tsx --test src/services/nutrition.test.ts src/services/catalogue.test.ts src/services/recognition.test.ts src/services/recognitionSchema.test.ts src/services/imageInput.test.ts src/services/authRules.test.ts src/services/supabase/config.test.ts src/services/supabase/mappers.test.ts src/services/supabase/repositories.test.ts src/utils/profile.test.ts src/services/qr.test.ts ../../supabase/tests/match.test.ts",
     "export:web": "expo export --platform web"
   },
   "dependencies": {
@@ -17,6 +17,7 @@
     "@expo-google-fonts/manrope": "^0.4.3",
     "@expo/vector-icons": "^15.0.2",
     "@react-native-async-storage/async-storage": "2.2.0",
+    "@supabase/supabase-js": "^2.119.2",
     "expo": "^58.0.26",
     "expo-constants": "~58.0.16",
     "expo-font": "~58.0.12",

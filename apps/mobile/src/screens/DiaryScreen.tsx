@@ -10,7 +10,8 @@ import { diaryDayKey, diaryDayLabel, timeLabel } from '../utils/dates';
 import { formatKcal, formatPortion } from '../utils/format';
 
 export default function DiaryScreen() {
-  const { diary, removeDiary, flash, clearFlash, storageError } = useAppState();
+  const { diary, removeDiary, flash, clearFlash, storageError, accountSource, accountLoading, syncError } =
+    useAppState();
   const [pendingId, setPendingId] = useState<string | null>(null);
   const groups = useMemo(() => {
     const map = new Map<string, typeof diary>();
@@ -26,8 +27,14 @@ export default function DiaryScreen() {
   return (
     <Screen tab>
       <Title>Diary</Title>
-      <Body>Meals you confirm and save stay on this device. They are not in a cloud account.</Body>
+      <Body>
+        {accountSource === 'supabase'
+          ? 'Meals you confirm and save are stored in your Gebeta account. Only you can read them.'
+          : 'Meals you confirm and save stay on this device. Sign in to keep them in a Gebeta account instead.'}
+      </Body>
+      {accountLoading ? <Muted>Loading your diary…</Muted> : null}
       {storageError ? <Muted>{storageError}</Muted> : null}
+      {syncError ? <Muted>{syncError}</Muted> : null}
       {flash ? <Flash message={flash} onClose={clearFlash} /> : null}
       {diary.length === 0 ? (
         <EmptyState
@@ -57,7 +64,7 @@ export default function DiaryScreen() {
                 {pendingId === entry.id ? (
                   <View style={styles.confirm}>
                     <Muted>Remove this meal?</Muted>
-                    <Pressable accessibilityRole="button" onPress={() => { removeDiary(entry.id); setPendingId(null); }}>
+                    <Pressable accessibilityRole="button" onPress={() => { void removeDiary(entry.id); setPendingId(null); }}>
                       <Muted style={styles.remove}>Remove</Muted>
                     </Pressable>
                     <Pressable accessibilityRole="button" onPress={() => setPendingId(null)}>

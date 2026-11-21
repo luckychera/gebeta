@@ -4,7 +4,6 @@ import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-nati
 import { FeatureCard, MealRow } from '../components/FoodCards';
 import { CalorieRing } from '../components/NutritionVisuals';
 import { Badge, Body, Card, Muted, PrimaryButton, Screen, SectionTitle } from '../components/ui';
-import { FOODS, getFood } from '../data/foods';
 import { foodImages } from '../data/images';
 import { go } from '../navigation/go';
 import { recommendFoods } from '../services/catalogue';
@@ -24,12 +23,12 @@ const SAMPLE = [
 
 export default function HomeScreen() {
   const ready = useFontsReady();
-  const { profile, diary } = useAppState();
+  const { profile, diary, foods, getFood, catalogueSource } = useAppState();
   const nameFont = ready ? { fontFamily: fonts.bold } : null;
   const bodyFont = ready ? { fontFamily: fonts.medium } : null;
   const todayKey = localDayKey(new Date());
   const today = diary.filter((entry) => diaryDayKey(entry.createdAt) === todayKey);
-  const recommendations = recommendFoods(profile);
+  const recommendations = recommendFoods(foods, profile);
   const reason = recommendations[0]?.reason ?? '';
   const sampleFoods = SAMPLE.map((item) => ({ ...item, food: getFood(item.foodId) })).filter((item) => item.food);
   const sampleKcal = sampleFoods.reduce((sum, item) => sum + (item.food?.nutrition.energyKcal ?? 0), 0);
@@ -94,8 +93,13 @@ export default function HomeScreen() {
         <SectionTitle action="See all" onAction={() => go('/(tabs)/explore')}>
           Featured Ethiopian foods
         </SectionTitle>
+        <Muted style={styles.reason}>
+          {catalogueSource === 'supabase'
+            ? 'Loaded from the Gebeta Supabase catalogue.'
+            : 'Loaded from the catalogue bundled with this app.'}
+        </Muted>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.featureRow}>
-          {FOODS.map((food) => (
+          {foods.map((food) => (
             <FeatureCard key={food.id} food={food} onPress={() => go(`/food/${food.id}`)} />
           ))}
         </ScrollView>

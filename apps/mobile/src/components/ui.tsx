@@ -169,14 +169,18 @@ export function Field({
   error,
   keyboardType = 'default',
   multiline = false,
+  secureTextEntry = false,
+  autoCapitalize,
 }: {
   label: string;
   value: string;
   onChangeText: (value: string) => void;
   placeholder?: string;
   error?: string;
-  keyboardType?: 'default' | 'number-pad';
+  keyboardType?: 'default' | 'number-pad' | 'email-address';
   multiline?: boolean;
+  secureTextEntry?: boolean;
+  autoCapitalize?: 'none' | 'sentences' | 'words';
 }) {
   const ready = useFontsReady();
   return (
@@ -190,6 +194,9 @@ export function Field({
         placeholderTextColor={colors.textSecondary}
         keyboardType={keyboardType}
         multiline={multiline}
+        secureTextEntry={secureTextEntry}
+        autoCapitalize={autoCapitalize ?? (secureTextEntry || keyboardType === 'email-address' ? 'none' : 'sentences')}
+        autoCorrect={!secureTextEntry}
         style={[styles.input, multiline && styles.inputMulti, typeface(ready, fonts.medium), error ? styles.inputError : null]}
       />
       {error ? <Text style={[styles.error, typeface(ready, fonts.medium)]}>{error}</Text> : null}

@@ -3,9 +3,8 @@ import { useState } from 'react';
 import { Image, Pressable, StyleSheet, Switch, Text, View } from 'react-native';
 import { QrMark } from '../components/QrMark';
 import { BackButton, Badge, Body, Card, Disclaimer, EmptyState, Field, Muted, PrimaryButton, Screen, SecondaryButton, Title } from '../components/ui';
-import { NUTRITION_DISCLAIMER, getFood } from '../data/foods';
+import { NUTRITION_DISCLAIMER } from '../data/foods';
 import { foodImages } from '../data/images';
-import { getProvider } from '../data/providers';
 import { buildProviderLink } from '../services/links';
 import { useAppState } from '../state/AppState';
 import { colors, radius } from '../theme/tokens';
@@ -14,8 +13,9 @@ import { currentWebBase } from '../utils/webBase';
 
 export default function ProviderScreen() {
   const { id } = useLocalSearchParams<{ id?: string }>();
+  const { menus, toggleMenuItem, addMenuItem, updateMenuItem, moderation, getFood, getProvider, catalogueLoading, catalogueSource, syncError } =
+    useAppState();
   const provider = getProvider(typeof id === 'string' ? id : '');
-  const { menus, toggleMenuItem, addMenuItem, updateMenuItem, moderation } = useAppState();
   const [manage, setManage] = useState(false);
   const [name, setName] = useState('');
   const [price, setPrice] = useState('');
@@ -30,7 +30,14 @@ export default function ProviderScreen() {
   if (!provider) {
     return (
       <Screen>
-        <EmptyState title="Provider not found" body="That demo kitchen is not in the sample list." />
+        <EmptyState
+          title={catalogueLoading ? 'Loading this menu…' : 'Provider not found'}
+          body={
+            catalogueLoading
+              ? 'One moment while the published listings load.'
+              : 'That kitchen is not in the published list.'
+          }
+        />
       </Screen>
     );
   }
@@ -48,7 +55,7 @@ export default function ProviderScreen() {
       setFormError('Enter a sample price in ETB, or 0.');
       return;
     }
-    addMenuItem(provider.id, {
+    void addMenuItem(provider.id, {
       id: createId('menu'),
       foodId: null,
       name: name.trim(),
@@ -83,7 +90,7 @@ export default function ProviderScreen() {
       setEditError('Enter a sample price in ETB, or 0.');
       return;
     }
-    updateMenuItem(provider.id, itemId, {
+    void updateMenuItem(provider.id, itemId, {
       name: editName.trim(),
       description: editDescription.trim() || 'Updated in the demo.',
       priceEtb: amount,
@@ -111,6 +118,12 @@ export default function ProviderScreen() {
         <Title>{provider.name}</Title>
         <Muted>{provider.city} · fictional</Muted>
         <Body>{provider.summary}</Body>
+        {syncError ? <Muted style={styles.error}>{syncError}</Muted> : null}
+        {catalogueSource === 'supabase' && !provider.manageable ? (
+          <Muted>
+            Guest view. Provider tools appear only for an account listed as a manager of this kitchen in the database.
+          </Muted>
+        ) : null}
         {provider.manageable ? (
           <View style={styles.mode}>
             <Pressable accessibilityRole="button" onPress={() => setManage(false)} style={[styles.modeButton, !manage && styles.modeOn]}>
@@ -140,7 +153,9 @@ export default function ProviderScreen() {
                   <Switch
                     accessibilityLabel={`Publish ${item.name}`}
                     value={item.published}
-                    onValueChange={() => toggleMenuItem(provider.id, item.id)}
+                    onValueChange={() => {
+                      void toggleMenuItem(provider.id, item.id);
+                    }}
                     trackColor={{ true: colors.secondary, false: colors.border }}
                     thumbColor={colors.white}
                   />

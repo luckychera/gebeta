@@ -1,5 +1,4 @@
 import type { FilterId } from '../data/options';
-import { FOODS } from '../data/foods';
 import type { FoodRecord, Profile } from '../types';
 
 export type Recommendation = {
@@ -23,12 +22,12 @@ export function searchFoods(foods: FoodRecord[], query: string): FoodRecord[] {
   });
 }
 
-export function similarFoods(foodId: string, limit = 3): FoodRecord[] {
-  const current = FOODS.find((food) => food.id === foodId);
+export function similarFoods(foods: FoodRecord[], foodId: string, limit = 3): FoodRecord[] {
+  const current = foods.find((food) => food.id === foodId);
   if (!current) return [];
-  return FOODS.filter(
-    (food) => food.id !== foodId && food.categories.some((category) => current.categories.includes(category)),
-  ).slice(0, limit);
+  return foods
+    .filter((food) => food.id !== foodId && food.categories.some((category) => current.categories.includes(category)))
+    .slice(0, limit);
 }
 
 export function allergyCaution(food: FoodRecord, allergies: string, consent: boolean): string | null {
@@ -40,15 +39,15 @@ export function allergyCaution(food: FoodRecord, allergies: string, consent: boo
   return `Your allergy note mentions “${hit}”. This dish often includes related ingredients. A photo cannot confirm this plate. Check with the cook or provider.`;
 }
 
-export function recommendFoods(profile: Profile): Recommendation[] {
+export function recommendFoods(foods: FoodRecord[], profile: Profile): Recommendation[] {
   if (!profile.consent) {
-    return FOODS.slice(0, 3).map((food) => ({
+    return foods.slice(0, 3).map((food) => ({
       food,
-      reason: 'Featured in the demo catalogue. Not a personal health prescription.',
+      reason: 'Featured in the catalogue. Not a personal health prescription.',
     }));
   }
 
-  let pool = [...FOODS];
+  let pool = [...foods];
   const because: string[] = [];
 
   if (profile.preferences.includes('Vegetarian')) {
@@ -69,7 +68,7 @@ export function recommendFoods(profile: Profile): Recommendation[] {
     }
   }
   if (pool.length === 0) {
-    pool = FOODS.filter((food) => food.categories.includes('vegetarian'));
+    pool = foods.filter((food) => food.categories.includes('vegetarian'));
   }
 
   const spice = profile.preferences.includes('Mild spice')
@@ -86,8 +85,8 @@ export function recommendFoods(profile: Profile): Recommendation[] {
     ? ' A note about diabetes or blood pressure is personal context. It does not make a dish suitable for that condition.'
     : '';
   const reason = because.length
-    ? `Shown because of ${because.join(' and ')}. This is dietary-preference filtering of the demo catalogue, not a prescribed diet.${spice}${goal}${life}${health}`
-    : `Featured in the demo catalogue. Not a personal health prescription.${spice}${goal}${life}${health}`;
+    ? `Shown because of ${because.join(' and ')}. This is dietary-preference filtering of the catalogue, not a prescribed diet.${spice}${goal}${life}${health}`
+    : `Featured in the catalogue. Not a personal health prescription.${spice}${goal}${life}${health}`;
 
   return pool.slice(0, 3).map((food) => ({ food, reason }));
 }

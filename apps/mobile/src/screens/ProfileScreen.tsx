@@ -4,12 +4,15 @@ import { Body, Card, Chip, Field, Muted, PrimaryButton, Screen, SecondaryButton,
 import { ACTIVITIES, GENDERS, HEALTH_CONTEXT, LIFE_STAGES, PREFERENCE_OPTIONS, goalOptions } from '../data/options';
 import { go, replace } from '../navigation/go';
 import { useAppState } from '../state/AppState';
+import { useAuth } from '../state/AuthState';
 import { colors } from '../theme/tokens';
 import type { LifeStage, Profile, ProfileGoal } from '../types';
 import { emptyProfile, toggleValue, validateProfile } from '../utils/profile';
 
 export default function ProfileScreen() {
-  const { profile, saveProfile, storageError, resetWelcome, clearDemo } = useAppState();
+  const { profile, saveProfile, storageError, resetWelcome, clearDemo, accountSource, accountLoading, syncError } =
+    useAppState();
+  const { status: authStatus, user, busy: authBusy, signOut } = useAuth();
   const [draft, setDraft] = useState<Profile>(profile);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saved, setSaved] = useState(false);
@@ -39,6 +42,36 @@ export default function ProfileScreen() {
       <Title>Profile</Title>
       <Body>Health details are optional. Nothing here is a diagnosis or a prescribed diet.</Body>
       {storageError ? <Muted>{storageError}</Muted> : null}
+      {syncError ? <Muted style={styles.danger}>{syncError}</Muted> : null}
+      <Card>
+        {accountSource === 'supabase' && user ? (
+          <>
+            <Body>Signed in as {user.email}</Body>
+            <Muted>
+              {accountLoading
+                ? 'Loading your profile from Supabase…'
+                : 'This profile is stored in your Gebeta account. Only this account can read it.'}
+            </Muted>
+            <View style={styles.actionGap} />
+            <SecondaryButton
+              label={authBusy ? 'Signing out…' : 'Sign out'}
+              onPress={() => {
+                void signOut();
+              }}
+            />
+          </>
+        ) : (
+          <>
+            <Body>No account on this device</Body>
+            <Muted>
+              Everything below is saved on this device only. Sign in to keep your profile and diary in your Gebeta
+              account instead.
+            </Muted>
+            <View style={styles.actionGap} />
+            <SecondaryButton label={authStatus === 'loading' ? 'Checking…' : 'Sign in'} onPress={() => go('/signin')} />
+          </>
+        )}
+      </Card>
       <Card>
         <Field label="Display name" value={draft.displayName} onChangeText={(displayName) => patch({ displayName })} placeholder="Your name" />
       </Card>
@@ -47,9 +80,12 @@ export default function ProfileScreen() {
           <View style={styles.consentCopy}>
             <Body>Save optional details on this device</Body>
             <Muted>
-              Age, gender, activity, dietary preferences, allergies, a weight or eating goal, a pregnancy or breastfeeding note, and a
-              diabetes or blood pressure note stay off until you agree. Nothing leaves this device, and you can turn this off later to
-              erase them.
+              Age, gender, activity, dietary preferences, allergies, a weight or eating goal, a pregnancy or
+              breastfeeding note, and a diabetes or blood pressure note stay off until you agree.{' '}
+              {accountSource === 'supabase'
+                ? 'With an account they are stored in your own row in the Gebeta database, readable by you alone. No provider, reviewer, or administrator can read them.'
+                : 'Nothing leaves this device.'}{' '}
+              Turning this off again erases them.
             </Muted>
           </View>
           <Switch
@@ -146,14 +182,14 @@ export default function ProfileScreen() {
       </Card>
       {!draft.consent ? <Muted>Turn on consent to edit the optional fields.</Muted> : null}
       <PrimaryButton
-        label={saved ? 'Saved on this device' : 'Save profile'}
+        label={saved ? (accountSource === 'supabase' ? 'Saved to your account' : 'Saved on this device') : 'Save profile'}
         onPress={() => {
           const result = validateProfile(draft);
           setErrors(result.errors);
           if (Object.keys(result.errors).length > 0) return;
-          saveProfile(result.profile);
           setDraft(result.profile);
           setSaved(true);
+          void saveProfile(result.profile);
         }}
       />
       <SecondaryButton label="For food businesses" onPress={() => go('/business')} />
@@ -179,6 +215,7 @@ const styles = StyleSheet.create({
   consentRow: { flexDirection: 'row', gap: 12, alignItems: 'center' },
   consentCopy: { flex: 1, gap: 4 },
   label: { marginTop: 12, marginBottom: 8 },
+  actionGap: { height: 12 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   dimmed: { opacity: 0.55 },
   danger: { color: colors.danger, textAlign: 'center', fontSize: 15, paddingVertical: 8 },

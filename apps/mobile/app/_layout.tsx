@@ -6,6 +6,7 @@ import { StatusBar } from 'expo-status-bar';
 import { Platform, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AppStateProvider } from '../src/state/AppState';
+import { AuthProvider } from '../src/state/AuthState';
 import { FontsProvider } from '../src/theme/fonts';
 import { colors } from '../src/theme/tokens';
 
@@ -24,14 +25,16 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <FontsProvider ready={loaded && !error}>
-        <AppStateProvider>
-          <StatusBar style="dark" />
-          <View style={[styles.shell, framed && styles.shellFramed]}>
-            <View style={[styles.device, framed && styles.deviceFramed]}>
-              <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.background } }} />
+        <AuthProvider>
+          <AppStateProvider>
+            <StatusBar style="dark" />
+            <View style={[styles.shell, framed && styles.shellFramed]}>
+              <View style={[styles.device, framed && styles.deviceFramed]}>
+                <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.background } }} />
+              </View>
             </View>
-          </View>
-        </AppStateProvider>
+          </AppStateProvider>
+        </AuthProvider>
       </FontsProvider>
     </SafeAreaProvider>
   );

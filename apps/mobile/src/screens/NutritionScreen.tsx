@@ -4,7 +4,7 @@ import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { MealRow } from '../components/FoodCards';
 import { MacroBar } from '../components/NutritionVisuals';
 import { Badge, Body, Card, Disclaimer, EmptyState, Muted, PrimaryButton, Screen, SecondaryButton, Title } from '../components/ui';
-import { IMAGE_LIMIT, INGREDIENT_NOTE, NUTRITION_DISCLAIMER, getFood } from '../data/foods';
+import { IMAGE_LIMIT, INGREDIENT_NOTE, NUTRITION_DISCLAIMER } from '../data/foods';
 import { imageFor } from '../data/images';
 import { go } from '../navigation/go';
 import { allergyCaution, similarFoods } from '../services/catalogue';
@@ -17,8 +17,8 @@ import { clampPortion, createId, formatKcal, formatPortion } from '../utils/form
 export default function NutritionScreen() {
   const params = useLocalSearchParams<{ foodId?: string; photo?: string }>();
   const foodId = typeof params.foodId === 'string' ? params.foodId : '';
+  const { scan, profile, addDiary, foods, getFood, accountSource, syncError } = useAppState();
   const food = getFood(foodId);
-  const { scan, profile, addDiary } = useAppState();
   const [portion, setPortion] = useState(1);
   const [saved, setSaved] = useState(false);
 
@@ -29,7 +29,7 @@ export default function NutritionScreen() {
   if (!food) {
     return (
       <Screen>
-        <EmptyState title="Food not found" body="That dish is not in the demo catalogue." action="Explore foods" onAction={() => go('/(tabs)/explore')} />
+        <EmptyState title="Food not found" body="That dish is not in the catalogue." action="Explore foods" onAction={() => go('/(tabs)/explore')} />
       </Screen>
     );
   }
@@ -37,9 +37,9 @@ export default function NutritionScreen() {
   const scaled = scaleNutrition(food, portion);
   const showPhoto = params.photo === '1' && scan?.imageUri;
   const caution = allergyCaution(food, profile.allergies, profile.consent);
-  const similar = similarFoods(food.id);
+  const similar = similarFoods(foods, food.id);
 
-  const save = () => {
+  const save = async () => {
     const entry: DiaryEntry = {
       id: createId('meal'),
       foodId: food.id,
@@ -49,10 +49,10 @@ export default function NutritionScreen() {
       ...scaled,
       imageKey: food.imageKey,
       createdAt: new Date().toISOString(),
-      sourceLabel: 'Illustrative demo estimate',
+      sourceLabel: food.nutritionSource,
     };
-    addDiary(entry);
     setSaved(true);
+    await addDiary(entry);
     go('/(tabs)/diary');
   };
 
@@ -116,12 +116,21 @@ export default function NutritionScreen() {
       <Card>
         <Muted>Source</Muted>
         <Body>{food.nutritionSource}</Body>
-        <Muted style={styles.gapTop}>Status: illustrative demo estimate</Muted>
+        <Muted style={styles.gapTop}>
+          Status: {food.verificationStatus === 'institution-reviewed' ? 'institution reviewed' : 'illustrative estimate'}
+        </Muted>
         <Muted style={styles.gapTop}>{food.assumptions}</Muted>
         <Muted style={styles.gapTop}>{IMAGE_LIMIT}</Muted>
       </Card>
       <Disclaimer>{NUTRITION_DISCLAIMER}</Disclaimer>
-      <PrimaryButton label={saved ? 'Saved' : 'Save to Diary'} onPress={save} disabled={saved} />
+      {syncError ? <Muted>{syncError}</Muted> : null}
+      <PrimaryButton
+        label={saved ? 'Saved' : accountSource === 'supabase' ? 'Save to my account' : 'Save to Diary'}
+        onPress={() => {
+          void save();
+        }}
+        disabled={saved}
+      />
       <SecondaryButton label="Explore Similar Foods" onPress={() => go('/(tabs)/explore')} />
       <View style={styles.list}>
         {similar.map((item) => (
