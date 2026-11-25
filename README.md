@@ -87,6 +87,8 @@ npx serve -s dist -l 8090
 
 The export is a single-page build, so a static host must rewrite unknown paths to `index.html`. `vercel.json` in the repository root does that, which keeps routes such as `/provider/kafa-terrace` working on refresh and when opened from a QR code.
 
+Vercel does not receive `apps/mobile/.env`, because that file is gitignored. Add `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY` in the Vercel project’s Environment Variables, then redeploy. Those names are public by design, so Vercel rejects them when visibility is set to Secret. Choose Config instead. Do not add the Supabase secret key, the service-role key, or `GEMINI_API_KEY` to Vercel. The Gemini key belongs in Supabase Edge Function secrets.
+
 Set `EXPO_PUBLIC_WEB_BASE_URL` to the deployed origin if you want native builds to encode the public browser URL in provider QR codes. On the web the app uses `window.location.origin` automatically. This value is a public address, not a secret.
 
 ## Security model
